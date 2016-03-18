@@ -1,3 +1,4 @@
+int blend = 0;
 int incomingByte = 0;
 
 void setup(){
@@ -7,21 +8,22 @@ void setup(){
 }
 
 void loop(){
-  //digitalWrite(12, HIGH);
-  //digitalWrite(13, LOW);
+  if (blend == 0){
+    digitalWrite(12, LOW);
+  }
+  else{
+    digitalWrite(12, HIGH);
+  }
 }
 
 void serialEvent() {
   if(Serial.available() > 0) {
     char data = Serial.read();
-    char str[2];
-    str[0] = data;
-    str[1] = '\0';
-    if(str == "1\n"){
-      digitalWrite(12,HIGH);
+    if(data == '1'){
+      blend = 1;
     }
-    if(str == "0\n"){
-      digitalWrite(12,LOW);
+    if(data == '0'){
+      blend = 0;
     }
   }
 }

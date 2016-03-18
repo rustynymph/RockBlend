@@ -4,7 +4,7 @@ import sys, pygame, pygame.midi, serial, time
 pygame.init()
 pygame.midi.init()
 
-ser = serial.Serial('/dev/ttyACM5', 9600)
+ser = serial.Serial('/dev/ttyACM6', 9600)
 
 lastNotePlayed = 0;
 timeNotePlayed = 0;
@@ -20,9 +20,9 @@ inp = pygame.midi.Input(3)
 # run the event loop
 while True:
 	if (timeDiff < 1):
-		ser.write("1\n")
+		ser.write('1')
 	else:
-		ser.write("0\n")
+		ser.write('0')
 	if inp.poll():
 		# no way to find number of messages in queue
 		# so we just specify a high max value
