@@ -15,7 +15,7 @@ def freestyleBlenderState():
 def practiceBlenderState():
 	global correctNotes
 	global incorrectNotes
-	threading.Timer(3.0, practiceBlenderState).start()
+	threading.Timer(2.5, practiceBlenderState).start()
 	totalNotesPlayed = correctNotes + incorrectNotes
 	if (totalNotesPlayed > 0):
 		amountIncorrect = float(incorrectNotes) / float(totalNotesPlayed)
@@ -107,8 +107,8 @@ def main(args):
 	pygame.midi.init()
 
 	# list all midi devices
-	for x in range( 0, pygame.midi.get_count() ):
-		print pygame.midi.get_device_info(x)
+	#for x in range( 0, pygame.midi.get_count() ):
+	#	print pygame.midi.get_device_info(x)
 
 	# open a specific midi device
 	inp = pygame.midi.Input(3)	
@@ -116,6 +116,7 @@ def main(args):
 	if (not(key and mode)):
 		print "You are in FREESTYLE mode"
 		midiThread = threading.Thread(target=freestyleListener, args=(inp,))
+		midiThread.daemon = True
 		midiThread.start()
 		freestyleBlenderState()
 	else:
@@ -123,12 +124,16 @@ def main(args):
 		print "You have selected the key of {0} {1}".format(key, mode)
 		initMidiScales(key, mode)
 		midiThread = threading.Thread(target=practiceListener, args=(inp,))
+		midiThread.daemon = True
 		midiThread.start()
 		practiceBlenderState()		
 
 	# wait 10ms - this is arbitrary, but wait(0) still resulted
 	# in 100% cpu utilization
-	pygame.time.wait(10)	
+	pygame.time.wait(10)
+		
+	while True:
+		time.sleep(1)
 
 if __name__ == "__main__":
 	ser = None
