@@ -318,21 +318,21 @@ mainframe.columnconfigure(0, weight=1)
 mainframe.rowconfigure(0, weight=1)
 mainframe.configure(background="#000000", highlightthickness=0)
 
-mainPhoto = ttk.PhotoImage(file="../images/rockblend.png")
+mainPhoto = ttk.PhotoImage(file="images/rockblend.png")
 pic = ttk.Label(mainframe, image=mainPhoto, fg="#000000", bg="#000000")
 pic.pack(padx=(winWidth-mainImageWidth)/2)
 selectModeText = ttk.Label(mainframe, text="Select mode:", fg="#FFFFFF", bg="#000000", pady=40, font=("courier",20))
 
 # Buttons #
-freestyleButtonPhoto = ttk.PhotoImage(file="../images/freestylehoverblack.png")
-freestyleButtonPhotoHover = ttk.PhotoImage(file="../images/freestyleblack.png")
+freestyleButtonPhoto = ttk.PhotoImage(file="images/freestylehoverblack.png")
+freestyleButtonPhotoHover = ttk.PhotoImage(file="images/freestyleblack.png")
 freestyleButton = ttk.Button(mainframe, image=freestyleButtonPhoto, fg="#000000", bg="#000000", borderwidth=0, \
 	highlightthickness=0, highlightcolor="#000000", highlightbackground="#000000", command=freestyleMode)
 freestyleButton.bind('<Enter>', freestyleHoverOn)
 freestyleButton.bind('<Leave>', freestyleHoverOff)
 
-practiceButtonPhoto = ttk.PhotoImage(file="../images/practicehoverblack.png")
-practiceButtonPhotoHover = ttk.PhotoImage(file="../images/practiceblack.png")
+practiceButtonPhoto = ttk.PhotoImage(file="images/practicehoverblack.png")
+practiceButtonPhotoHover = ttk.PhotoImage(file="images/practiceblack.png")
 practiceButton = ttk.Button(mainframe, image=practiceButtonPhoto, fg="#000000", bg="#000000", borderwidth=0, \
 	highlightthickness=0, highlightcolor="#000000", highlightbackground="#000000", command=practiceMode)
 practiceButton.bind('<Enter>', practiceHoverOn)
