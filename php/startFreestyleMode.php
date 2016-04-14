@@ -1,8 +1,7 @@
 <?php 
 
-$commandString = 'python /home/akelly/RockBlend/notes.py 0';
-$command = escapeshellcmd($commandString);
-$output = shell_exec($command);
-echo $output;
+$commandString = 'export DISPLAY=:0.0; sudo -u akelly python ../scripts/notes.py 0';
+//$commandString = 'sudo -u akelly ../scripts/rockblend.sh 0';
+echo shell_exec($commandString);
 
 ?>

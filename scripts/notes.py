@@ -1,4 +1,7 @@
-import sys, pygame, pygame.midi, serial, time, threading
+#!/usr/bin/env python
+
+import os, sys, pygame, pygame.midi, serial, time, threading
+#logging.basicConfig(filename='~/rockblend.log',level=logging.DEBUG)
 
 def freestyleBlenderState():
 	global notesPlayed
@@ -90,7 +93,11 @@ def main(args):
 		exit(1)
 	else:
 		serialPort = '/dev/ttyACM{0}'.format(str(args[1]))
-		ser = serial.Serial(serialPort, 9600)
+		try:
+			ser = serial.Serial(serialPort, 9600)
+		except:
+			print "can't initialize serial port"
+			exit(1)
 
 	if (len(args) == 4):
 		args[2] = args[2].lower()
@@ -103,21 +110,42 @@ def main(args):
 			mode = 'minor'
 
 	# set up pygame
-	pygame.init()
-	pygame.midi.init()
+	try:
+		pygame.init()
+	except:
+		print "pygame will not init"
+		exit(1)
+
+	try:
+		pygame.midi.init()
+	except:
+		print "pygame midi will not init"
+		exit(1)
 
 	# list all midi devices
 	#for x in range( 0, pygame.midi.get_count() ):
 	#	print pygame.midi.get_device_info(x)
 
 	# open a specific midi device
-	inp = pygame.midi.Input(3)	
+	try:
+		inp = pygame.midi.Input(3)	
+	except:
+		print "cannot open midi device"
+		exit(1)
 
 	if (not(key and mode)):
 		print "You are in FREESTYLE mode"
-		midiThread = threading.Thread(target=freestyleListener, args=(inp,))
-		midiThread.daemon = True
-		midiThread.start()
+		try:
+			midiThread = threading.Thread(target=freestyleListener, args=(inp,))
+			midiThread.daemon = True
+		except:
+			print "could not create mide thread"
+			exit(1)
+		try:
+			midiThread.start()
+		except:
+			print "could not start midi thread"
+			exit(1)
 		freestyleBlenderState()
 	else:
 		print "You are in PRACTICE mode"
@@ -125,7 +153,11 @@ def main(args):
 		initMidiScales(key, mode)
 		midiThread = threading.Thread(target=practiceListener, args=(inp,))
 		midiThread.daemon = True
-		midiThread.start()
+		try:
+			midiThread.start()
+		except:
+			print "could not start midi thread"
+			exit(1)
 		practiceBlenderState()		
 
 	# wait 10ms - this is arbitrary, but wait(0) still resulted
@@ -135,10 +167,9 @@ def main(args):
 	while True:
 		time.sleep(1)
 
-if __name__ == "__main__":
-	ser = None
-	notesPlayed = 0;
-	correctNotes = 0;
-	incorrectNotes = 0;
-	notes = []
-	main(sys.argv)
+ser = None
+notesPlayed = 0;
+correctNotes = 0;
+incorrectNotes = 0;
+notes = []
+main(sys.argv)

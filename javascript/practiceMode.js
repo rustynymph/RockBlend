@@ -21,7 +21,7 @@ function showPracticeOptions(){
 	var mainContainer = document.getElementById("mainContainer");
 	var selectPitch = generatePracticePitchOptions();
 	var selectMode = generatePracticeModeOptions();
-	var buttons = '<br><button onclick="goBack()">BACK</button>&nbsp<button onclick="go()" id="practiceGoButton">GO</button>';
+	var buttons = '<br><br><button onclick="goBack()">BACK</button>&nbsp<button onclick="go()" id="practiceGoButton">GO</button>';
 	mainContainer.innerHTML = selectPitch + selectMode + buttons;
 }
 
@@ -36,7 +36,7 @@ function go(){
 	var selectedPitch = document.getElementById("pitch").value;
 	var selectedMode = document.getElementById("mode").value;
 	mainContainer.innerHTML = 'You\'ve selected: ' + selectedPitch + ' ' + selectedMode + '!';	
-	mainContainer.innerHTML = mainContainer.innerHTML + '<br><button onclick="showPracticeOptions()">BACK</button>';
+	mainContainer.innerHTML = mainContainer.innerHTML + '<br><br><button onclick="showPracticeOptions()">BACK</button>';
 
 	$.ajax({
 	    data: 'pitch=' + selectedPitch + '&mode=' + selectedMode,

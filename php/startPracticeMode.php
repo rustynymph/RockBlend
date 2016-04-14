@@ -2,9 +2,7 @@
 
 $pitch = $_GET['pitch'];
 $mode = $_GET['mode'];
-$commandString = 'python /home/akelly/RockBlend/notes.py 0 ' . $pitch . ' ' . $mode;
-$command = escapeshellcmd($commandString);
-$output = shell_exec($command);
-echo $output;
+$commandString = 'sudo -u akelly python ../scripts/notes.py 0 ' . $pitch . ' ' . $mode;
+echo exec($commandString);
 
 ?>
