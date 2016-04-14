@@ -27,10 +27,10 @@ def freestyleBlenderState():
 	threading.Timer(2.0, freestyleBlenderState).start()
 	avgCount = notesPlayed / 4
 	if avgCount >= 1:
-		print "on"
+		#print "on"
 		serialWrite('1')
 	else:
-		print "off"
+		#print "off"
 		serialWrite('0')
 	notesPlayed = 0
 
@@ -339,6 +339,17 @@ else:
 		backToHomeScreen()
 
 center(root) #must be at bottom
+
+def on_closing():
+	global inp
+	global ser
+	print "closing"
+	root.destroy()
+	inp.close()
+	ser.close()
+	exit(0)
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.bind('<Return>', practiceMode)
 root.mainloop()
 
