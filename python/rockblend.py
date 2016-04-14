@@ -21,11 +21,13 @@ def freestyleBlenderState():
 		while freestyle == True and practice == False:
 			avgCount = notesPlayed / 4
 			if avgCount >= 1:
-				print "on"
+				#print "on"
 				serialWrite('1')
+				blenderState.configure(text="Blender is: on")
 			else:
-				print "off"
+				#print "off"
 				serialWrite('0')
+				blenderState.configure(text="Blender is: off")
 			notesPlayed = 0
 			time.sleep(2.0)
 
@@ -38,14 +40,17 @@ def practiceBlenderState():
 			if (totalNotesPlayed > 0):
 				amountIncorrect = float(incorrectNotes) / float(totalNotesPlayed)
 				if amountIncorrect < 0.2:
-					print "on"
+					#print "on"
 					serialWrite('1')
+					blenderState.configure(text="Blender is: on")
 				else:
-					print "off"
+					#print "off"
 					serialWrite('0')
+					blenderState.configure(text="Blender is: off")
 			else:
-				print "off"
+				#print "off"
 				serialWrite('0')
+				blenderState.configure(text="Blender is: off")
 			correctNotes = 0	
 			incorrectNotes = 0
 			time.sleep(2.5)
@@ -120,6 +125,7 @@ def tryReconnectingSerialConn(portNum):
 		errorMsg.pack_forget()
 		portOption.pack_forget()
 		selectPortButton.pack_forget()	
+		blenderState.pack_forget()
 		errorMsg.config(text="Serial port /dev/ttyACM{} not found\ntry selecting another port OR\n double check your Arduino is plugged in".format(portNum))
 		chooseDifferentSerialPort()
 	else:
@@ -225,6 +231,7 @@ def practiceHoverOff(arg):
 def chooseDifferentSerialPort():
 	errorMsg.pack_forget()
 	portOption.pack_forget()
+	blenderState.pack_forget()
 	selectPortButton.pack_forget()	
 	errorMsg.pack()
 	portOption.pack()
@@ -233,6 +240,7 @@ def chooseDifferentSerialPort():
 def midiError():
 	errorMsg.pack_forget()
 	portOption.pack_forget()
+	blenderState.pack_forget()
 	selectPortButton.pack_forget()	
 	errorMsg.configure(text="Could not connect to MIDI device...\nis your keyboard plugged in\nand turned on?")
 	errorMsg.pack()
@@ -249,6 +257,7 @@ def backToHomeScreen():
 	modeOption.pack_forget()
 	okButton.pack_forget()
 	errorMsg.pack_forget()
+	blenderState.pack_forget()
 	portOption.pack_forget()
 	selectPortButton.pack_forget()
 	if practiceText:
@@ -261,6 +270,7 @@ def practiceMode():
 	selectModeText.pack_forget()
 	freestyleButton.pack_forget()
 	practiceButton.pack_forget()
+	blenderState.pack_forget()
 	if practiceText:
 		practiceText.pack_forget()
 	optionsWidget.pack(pady=50)
@@ -274,13 +284,15 @@ def practiceModeNext():
 	key = selectedKey.get()
 	mode = selectedMode.get()
 	msg = "You've selected practice mode in the key of {0} {1}\nPlaying notes in key will turn the blender on!".format(key, mode)
-	practiceText = ttk.Label(mainframe, text=msg, fg="#FFFFFF", bg="#000000", pady=60, font=("courier",32))
+	practiceText = ttk.Label(mainframe, text=msg, fg="#FFFFFF", bg="#000000", pady=30, font=("courier",25))
 	keyOption.pack_forget()
 	backHomeButton.pack_forget()
 	modeOption.pack_forget()
 	okButton.pack_forget()
+	blenderState.pack_forget()
 	optionsWidget.pack_forget()
 	practiceText.pack()
+	blenderState.pack()
 	backToPracticeButton.pack()
 	initMidiScales(key.lower(), mode.lower())
 	startPracticeMode()
@@ -289,7 +301,9 @@ def freestyleMode():
 	selectModeText.pack_forget()
 	freestyleButton.pack_forget()
 	practiceButton.pack_forget()
+	blenderState.pack_forget()
 	text.pack()
+	blenderState.pack()
 	backHomeButton.pack()
 	startFreestyleMode()
 
@@ -327,7 +341,7 @@ practiceButton.bind('<Leave>', practiceHoverOff)
 #Freestyle page stuff
 backHomeButton = ttk.Button(mainframe, text="Go back", fg="#FFFFFF", bg="#000000", command=backToHomeScreen)
 backToPracticeButton = ttk.Button(mainframe, text="Go back", fg="#FFFFFF", bg="#000000", command=practiceMode)
-text = ttk.Label(mainframe, text="Freestyle mode\nTime to melt some faces!", fg="#FFFFFF", bg="#000000", pady=60, font=("courier",32))
+text = ttk.Label(mainframe, text="Freestyle mode\nTime to melt some faces!", fg="#FFFFFF", bg="#000000", pady=30, font=("courier",32))
 
 #Practice page stuff
 optionsWidget = ttk.Canvas(mainframe)
@@ -340,6 +354,9 @@ selectedMode.set("Major") # initial value
 modeOption = ttk.OptionMenu(optionsWidget, selectedMode, "Major", "Minor", "Major Pentatonic", "Minor Pentatonic")
 okButton = ttk.Button(mainframe, text="OK", fg="#FFFFFF", bg="#000000", command=practiceModeNext)
 practiceText = None
+
+#Blender state label
+blenderState = ttk.Label(mainframe, text="Blender is: off", fg="#FFFFFF", bg="#000000", font=("courier",32))
 
 #Settings page
 errorMsg = ttk.Label(mainframe, text="Serial port /dev/ttyACM0 not found\ntry selecting another port OR\n double check your Arduino is plugged in", fg="#FFFFFF", bg="#000000", pady=60, font=("courier",25))
@@ -361,7 +378,6 @@ center(root) #must be at bottom
 def on_closing():
 	global inp
 	global ser
-	print "closing"
 	root.destroy()
 	inp.close()
 	ser.close()
