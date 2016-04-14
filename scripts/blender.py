@@ -27,10 +27,10 @@ def freestyleBlenderState():
 	threading.Timer(2.0, freestyleBlenderState).start()
 	avgCount = notesPlayed / 4
 	if avgCount >= 1:
-		#print "on"
+		print "on"
 		serialWrite('1')
 	else:
-		#print "off"
+		print "off"
 		serialWrite('0')
 	notesPlayed = 0
 
@@ -70,7 +70,6 @@ def freestyleListener():
 			if msg[0][0][2] == 100: #this is a note pressed event
 				notesPlayed += 1
 		
-		#print "hi"
 
 def practiceListener():
 	global inp
@@ -109,9 +108,25 @@ def initMidiScales(key, mode):
 	notes += octaves
 
 
-def initSerialConn():
+def tryReconnectingSerialConn(portNum):
+	global midiConnected
+	try:
+		initSerialConn(portNum)
+	except:
+		errorMsg.pack_forget()
+		portOption.pack_forget()
+		selectPortButton.pack_forget()	
+		errorMsg.config(text="Serial port /dev/ttyACM{} not found\ntry selecting another port OR\n double check your Arduino is plugged in".format(portNum))
+		chooseDifferentSerialPort()
+	else:
+		if (midiConnected == False):
+			midiError()
+		else:
+			backToHomeScreen()
+
+def initSerialConn(portNum):
 	global ser
-	serialPort = '/dev/ttyACM0'
+	serialPort = '/dev/ttyACM{0}'.format(portNum)
 	ser = serial.Serial(serialPort, 9600)
 
 def initPygame():
@@ -127,7 +142,6 @@ def startFreestyleMode():
 	freestyleThread.daemon = True
 	freestyleThread.start()
 	startFreestyleBlenderState()
-	#freestyleBlenderState()
 
 def startPracticeMode():
 	global startPracticeMode
@@ -144,12 +158,23 @@ def stopFreestyleMode():
 	global freestyle
 	freestyle = False
 
-initSerialConn()
-initPygame()
+try:
+	initSerialConn(0) #initialize serial port, zero is default
+except:
+	serConnected = False
+else:
+	serConnected = True
 
-#===========================================
+try:
+	initPygame() #initialize connection with keyboard
+except:
+	midiConnected = False
+else:
+	midiConnected = True
+
+#=========================================== #
 			#Tkinter stuff
-#===========================================
+#=========================================== #
 
 winWidth = 1500
 winHeight = 600
@@ -179,8 +204,24 @@ def practiceHoverOff(arg):
 	practiceButton.configure(image = practiceButtonPhoto)
 	practiceButton.image = practiceButtonPhoto	
 
+def chooseDifferentSerialPort():
+	errorMsg.pack_forget()
+	portOption.pack_forget()
+	selectPortButton.pack_forget()	
+	errorMsg.pack()
+	portOption.pack()
+	selectPortButton.pack()
+
+def midiError():
+	errorMsg.pack_forget()
+	portOption.pack_forget()
+	selectPortButton.pack_forget()	
+	errorMsg.configure(text="Could not connect to MIDI device...\nis your keyboard plugged in\nand turned on?")
+	errorMsg.pack()
+
 def backToHomeScreen():
 	stopFreestyleMode()
+	stopPracticeMode()
 	selectModeText.pack()
 	practiceButton.pack(side=RIGHT, padx=100)
 	freestyleButton.pack(side=LEFT, padx=50)
@@ -189,11 +230,15 @@ def backToHomeScreen():
 	keyOption.pack_forget()
 	modeOption.pack_forget()
 	okButton.pack_forget()
+	errorMsg.pack_forget()
+	portOption.pack_forget()
+	selectPortButton.pack_forget()
 	if practiceText:
 		practiceText.pack_forget()
 	optionsWidget.pack_forget()
 
 def practiceMode():
+	stopPracticeMode()
 	backToPracticeButton.pack_forget()
 	selectModeText.pack_forget()
 	freestyleButton.pack_forget()
@@ -208,7 +253,9 @@ def practiceMode():
 
 def practiceModeNext():
 	global practiceText
-	msg = "You've selected practice mode in the key of {0} {1}\nPlaying notes in key will turn the blender on!".format(selectedKey.get(), selectedMode.get())
+	key = selectedKey.get()
+	mode = selectedMode.get()
+	msg = "You've selected practice mode in the key of {0} {1}\nPlaying notes in key will turn the blender on!".format(key, mode)
 	practiceText = ttk.Label(mainframe, text=msg, fg="#FFFFFF", bg="#000000", pady=60, font=("courier",32))
 	keyOption.pack_forget()
 	backHomeButton.pack_forget()
@@ -217,6 +264,8 @@ def practiceModeNext():
 	optionsWidget.pack_forget()
 	practiceText.pack()
 	backToPracticeButton.pack()
+	initMidiScales(key.lower(), mode.lower())
+	startPracticeMode()
 
 def freestyleMode():
 	selectModeText.pack_forget()
@@ -241,7 +290,6 @@ mainPhoto = ttk.PhotoImage(file="../images/rockblend.png")
 pic = ttk.Label(mainframe, image=mainPhoto, fg="#000000", bg="#000000")
 pic.pack(padx=(winWidth-mainImageWidth)/2)
 selectModeText = ttk.Label(mainframe, text="Select mode:", fg="#FFFFFF", bg="#000000", pady=40, font=("courier",20))
-selectModeText.pack()
 
 # Buttons #
 freestyleButtonPhoto = ttk.PhotoImage(file="../images/freestylehoverblack.png")
@@ -250,7 +298,6 @@ freestyleButton = ttk.Button(mainframe, image=freestyleButtonPhoto, fg="#000000"
 	highlightthickness=0, highlightcolor="#000000", highlightbackground="#000000", command=freestyleMode)
 freestyleButton.bind('<Enter>', freestyleHoverOn)
 freestyleButton.bind('<Leave>', freestyleHoverOff)
-freestyleButton.pack(side=LEFT, padx=50)
 
 practiceButtonPhoto = ttk.PhotoImage(file="../images/practicehoverblack.png")
 practiceButtonPhotoHover = ttk.PhotoImage(file="../images/practiceblack.png")
@@ -258,7 +305,6 @@ practiceButton = ttk.Button(mainframe, image=practiceButtonPhoto, fg="#000000", 
 	highlightthickness=0, highlightcolor="#000000", highlightbackground="#000000", command=practiceMode)
 practiceButton.bind('<Enter>', practiceHoverOn)
 practiceButton.bind('<Leave>', practiceHoverOff)
-practiceButton.pack(side=RIGHT, padx=100)
 
 #Freestyle page stuff
 backHomeButton = ttk.Button(mainframe, text="Go back", fg="#FFFFFF", bg="#000000", command=backToHomeScreen)
@@ -276,6 +322,21 @@ selectedMode.set("Major") # initial value
 modeOption = ttk.OptionMenu(optionsWidget, selectedMode, "Major", "Minor")
 okButton = ttk.Button(mainframe, text="OK", fg="#FFFFFF", bg="#000000", command=practiceModeNext)
 practiceText = None
+
+#Settings page
+errorMsg = ttk.Label(mainframe, text="Serial port /dev/ttyACM0 not found\ntry selecting another port OR\n double check your Arduino is plugged in", fg="#FFFFFF", bg="#000000", pady=60, font=("courier",25))
+selectedPort = ttk.StringVar(mainframe)
+selectedPort.set("ttyACM0") # initial value
+portOption = ttk.OptionMenu(mainframe, selectedPort, "ttyACM0", "ttyACM1", "ttyACM2", "ttyACM3", "ttyACM4", "ttyACM5", "ttyACM6", "ttyACM7", "ttyACM8", "ttyACM9")
+selectPortButton = ttk.Button(mainframe, text="select port", fg="#FFFFFF", bg="#000000", command=lambda: tryReconnectingSerialConn(selectedPort.get()[-1]))
+
+if(serConnected == False):
+	chooseDifferentSerialPort()
+else:
+	if(midiConnected == False):
+		midiError()
+	else:
+		backToHomeScreen()
 
 center(root) #must be at bottom
 root.bind('<Return>', practiceMode)
