@@ -334,7 +334,7 @@ def freestyleMode():
 	startFreestyleMode()
 
 root = Tk()
-root.title("Sports & Play")
+root.title("RockBlend")
 root.configure(background="#000000")
 root.maxsize(width=winWidth, height=winHeight)
 root.minsize(width=winWidth, height=winHeight)
