@@ -20,7 +20,7 @@ def freestyleBlenderState():
 	while 1:
 		while freestyle == True and practice == False:
 			avgCount = notesPlayed / 4
-			if avgCount >= 1:
+			if avgCount >= 2:
 				#print "on"
 				serialWrite('1')
 				blenderState.configure(text="Blender is: on")
@@ -37,7 +37,7 @@ def practiceBlenderState():
 	while 1:
 		while practice == True and freestyle == False:
 			totalNotesPlayed = correctNotes + incorrectNotes
-			if (totalNotesPlayed > 0):
+			if (totalNotesPlayed > 3):
 				amountIncorrect = float(incorrectNotes) / float(totalNotesPlayed)
 				if amountIncorrect < 0.2:
 					#print "on"
