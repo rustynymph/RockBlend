@@ -15,19 +15,24 @@ notes = []
 practice = False
 freestyle = False
 
+def resetBlenderState():
+	global notesPlayed
+	global correctNotes
+	global incorrectNotes
+	notesPlayed = 0;
+	correctNotes = 0;
+	incorrectNotes = 0;
+	serialWrite('0')
+
 def freestyleBlenderState():
 	global notesPlayed
 	while 1:
 		while freestyle == True and practice == False:
 			avgCount = notesPlayed / 4
 			if avgCount >= 2:
-				#print "on"
 				serialWrite('1')
-				blenderState.configure(text="Blender is: on")
 			else:
-				#print "off"
 				serialWrite('0')
-				blenderState.configure(text="Blender is: off")
 			notesPlayed = 0
 			time.sleep(2.0)
 
@@ -40,17 +45,11 @@ def practiceBlenderState():
 			if (totalNotesPlayed > 3):
 				amountIncorrect = float(incorrectNotes) / float(totalNotesPlayed)
 				if amountIncorrect < 0.2:
-					#print "on"
 					serialWrite('1')
-					blenderState.configure(text="Blender is: on")
 				else:
-					#print "off"
 					serialWrite('0')
-					blenderState.configure(text="Blender is: off")
 			else:
-				#print "off"
 				serialWrite('0')
-				blenderState.configure(text="Blender is: off")
 			correctNotes = 0	
 			incorrectNotes = 0
 			time.sleep(2.5)
@@ -58,6 +57,12 @@ def practiceBlenderState():
 def serialWrite(msg):
 	global ser
 	ser.write(msg)
+	if msg == '0':
+		state = 'off'
+	else:
+		state = 'on'
+	blenderState.configure(text="Blender is: {0}".format(state))
+
 
 def freestyleListener():
 	global inp
@@ -92,6 +97,13 @@ def practiceListener():
 					else:
 						incorrectNotes += 1	
 
+def phrygianDominantHelper(fifthNote):
+	pitches = {'c':60, 'c#':61, 'd':62, 'd#':63, 'e':64, 'f':65, 'f#':66, 'g':67, 'g#':68, 'a':69, 'a#':70, 'b':71}
+	for key,val in pitches.items():
+		if ((val+7 == fifthNote) or (val+7 == fifthNote-12) or (val+7 == fifthNote+12)):
+			return val
+
+
 def initMidiScales(key, scale):
 	global notes
 	pitches = {'c':60, 'c#':61, 'd':62, 'd#':63, 'e':64, 'f':65, 'f#':66, 'g':67, 'g#':68, 'a':69, 'a#':70, 'b':71}
@@ -113,11 +125,16 @@ def initMidiScales(key, scale):
 	elif scale == 'harmonic minor': #same as minor scale but 7th is raised 1 semitone
 		notes += minorScale
 		notes[6] = notes[6] + 1
-	elif scale == 'mixolydian': #same as major scale but 7th is lowered 1 semitone
+	elif scale == 'mixolydian mode': #same as major scale but 7th is lowered 1 semitone
 		notes += majorScale
 		notes[6] = notes[6] - 1
-	#elif scale == 'phrygian dominant'
-		#very metal, not sure how to do this one
+	elif scale == 'phrygian mode': #same as natural minor scale but 2nd is lowered 1 semitone
+		notes += minorScale
+		notes[1] = notes[1] - 1
+	elif scale == 'phrygian dominant': #same as the harmonic minor of which this note is the fifth. ex) E phrygian dominant = A harmonic minor 
+		note = phrygianDominantHelper(middleNote)
+		harmonicMinorScale = [note, note+2, note+3, note+5, note+7, note+8, note+11]
+		notes += harmonicMinorScale
 	for note in notes:
 		octaves += [note-12, note-24, note+12, note+24]
 
@@ -166,12 +183,12 @@ def startFreestyleMode():
 
 def stopPracticeMode():
 	global practice
-	serialWrite('0')
+	resetBlenderState()
 	practice = False
 
 def stopFreestyleMode():
 	global freestyle
-	serialWrite('0')
+	resetBlenderState()
 	freestyle = False
 
 
@@ -360,7 +377,7 @@ selectedKey.set("C") # initial value
 keyOption = ttk.OptionMenu(optionsWidget, selectedKey, "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#")
 selectedScale = ttk.StringVar(mainframe)
 selectedScale.set("Major") # initial value
-scaleOption = ttk.OptionMenu(optionsWidget, selectedScale, "Major", "Minor", "Major Pentatonic", "Minor Pentatonic", "Harmonic Minor", "Mixolydian")
+scaleOption = ttk.OptionMenu(optionsWidget, selectedScale, "Major", "Minor", "Major Pentatonic", "Minor Pentatonic", "Harmonic Minor", "Mixolydian Mode", "Phrygian Mode", "Phrygian Dominant")
 okButton = ttk.Button(mainframe, text="OK", fg="#FFFFFF", bg="#000000", command=practiceModeNext)
 practiceText = None
 
