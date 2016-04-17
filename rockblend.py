@@ -92,25 +92,32 @@ def practiceListener():
 					else:
 						incorrectNotes += 1	
 
-def initMidiScales(key, mode):
+def initMidiScales(key, scale):
 	global notes
 	pitches = {'c':60, 'c#':61, 'd':62, 'd#':63, 'e':64, 'f':65, 'f#':66, 'g':67, 'g#':68, 'a':69, 'a#':70, 'b':71}
 	middleNote = pitches[key]
 	notes = []
 	octaves = []
 	# major = W-W-H-W-W-W-H
+	majorScale = [middleNote, middleNote+2, middleNote+4, middleNote+5, middleNote+7, middleNote+9, middleNote+11]
 	# minor = W-H-W-W-H-W-W
-	# major pentatonic = 1,2,3,5,6 of major scale	
-	# minor pentatonic = 1,3,4,5,7 of natural minor scale
-	if mode == 'major':
-		notes += [middleNote, middleNote+2, middleNote+4, middleNote+5, middleNote+7, middleNote+9, middleNote+11]
-	elif mode == 'minor':
-		notes += [middleNote, middleNote+2, middleNote+3, middleNote+5, middleNote+7, middleNote+8, middleNote+10]
-	elif mode == 'major pentatonic':
-		notes += [middleNote, middleNote+2, middleNote+4, middleNote+7, middleNote+9]
-	else: #minor pentatonic
-		notes += [middleNote, middleNote+3, middleNote+5, middleNote+7, middleNote+10]
-		
+	minorScale = [middleNote, middleNote+2, middleNote+3, middleNote+5, middleNote+7, middleNote+8, middleNote+10]
+	if scale == 'major':
+		notes += majorScale
+	elif scale == 'minor':
+		notes += minorScale
+	elif scale == 'major pentatonic': #1,2,3,5,6 of major scale
+		notes += [majorScale[0], majorScale[1], majorScale[2], majorScale[4], majorScale[5]]
+	elif scale == 'minor pentatonic': #1,3,4,5,7 of natural minor scale
+		notes += [minorScale[0], minorScale[2], minorScale[3], minorScale[4], minorScale[6]]
+	elif scale == 'harmonic minor': #same as minor scale but 7th is raised 1 semitone
+		notes += minorScale
+		notes[6] = notes[6] + 1
+	elif scale == 'mixolydian': #same as major scale but 7th is lowered 1 semitone
+		notes += majorScale
+		notes[6] = notes[6] - 1
+	#elif scale == 'phrygian dominant'
+		#very metal, not sure how to do this one
 	for note in notes:
 		octaves += [note-12, note-24, note+12, note+24]
 
@@ -159,10 +166,12 @@ def startFreestyleMode():
 
 def stopPracticeMode():
 	global practice
+	serialWrite('0')
 	practice = False
 
 def stopFreestyleMode():
 	global freestyle
+	serialWrite('0')
 	freestyle = False
 
 
@@ -254,7 +263,7 @@ def backToHomeScreen():
 	text.pack_forget()
 	backHomeButton.pack_forget()
 	keyOption.pack_forget()
-	modeOption.pack_forget()
+	scaleOption.pack_forget()
 	okButton.pack_forget()
 	errorMsg.pack_forget()
 	blenderState.pack_forget()
@@ -275,26 +284,26 @@ def practiceMode():
 		practiceText.pack_forget()
 	optionsWidget.pack(pady=50)
 	keyOption.pack(side=LEFT)
-	modeOption.pack(side=RIGHT)
+	scaleOption.pack(side=RIGHT)
 	backHomeButton.pack()
 	okButton.pack()
 
 def practiceModeNext():
 	global practiceText
 	key = selectedKey.get()
-	mode = selectedMode.get()
-	msg = "You've selected practice mode in the key of {0} {1}\nPlaying notes in key will turn the blender on!".format(key, mode)
+	scale = selectedScale.get()
+	msg = "You've selected practice mode in the key of {0} {1}\nPlaying notes in key will turn the blender on!".format(key, scale)
 	practiceText = ttk.Label(mainframe, text=msg, fg="#FFFFFF", bg="#000000", pady=30, font=("courier",25))
 	keyOption.pack_forget()
 	backHomeButton.pack_forget()
-	modeOption.pack_forget()
+	scaleOption.pack_forget()
 	okButton.pack_forget()
 	blenderState.pack_forget()
 	optionsWidget.pack_forget()
 	practiceText.pack()
 	blenderState.pack()
 	backToPracticeButton.pack()
-	initMidiScales(key.lower(), mode.lower())
+	initMidiScales(key.lower(), scale.lower())
 	startPracticeMode()
 
 def freestyleMode():
@@ -349,9 +358,9 @@ optionsWidget.configure(background="#000000")
 selectedKey = ttk.StringVar(mainframe)
 selectedKey.set("C") # initial value
 keyOption = ttk.OptionMenu(optionsWidget, selectedKey, "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#")
-selectedMode = ttk.StringVar(mainframe)
-selectedMode.set("Major") # initial value
-modeOption = ttk.OptionMenu(optionsWidget, selectedMode, "Major", "Minor", "Major Pentatonic", "Minor Pentatonic")
+selectedScale = ttk.StringVar(mainframe)
+selectedScale.set("Major") # initial value
+scaleOption = ttk.OptionMenu(optionsWidget, selectedScale, "Major", "Minor", "Major Pentatonic", "Minor Pentatonic", "Harmonic Minor", "Mixolydian")
 okButton = ttk.Button(mainframe, text="OK", fg="#FFFFFF", bg="#000000", command=practiceModeNext)
 practiceText = None
 
@@ -379,8 +388,10 @@ def on_closing():
 	global inp
 	global ser
 	root.destroy()
-	inp.close()
-	ser.close()
+	if inp:
+		inp.close()
+	if ser:
+		ser.close()
 	exit(0)
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
